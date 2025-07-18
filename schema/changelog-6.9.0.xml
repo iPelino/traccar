@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+  logicalFilePath="changelog-6.9.0">
+
+  <changeSet author="author" id="changelog-6.9.0">
+
+    <createTable tableName="tc_companies">
+      <column name="id" type="INT" autoIncrement="true">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="logo" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyname" type="VARCHAR(128)">
+        <constraints nullable="false" />
+      </column>
+      <column name="registrationnumber" type="VARCHAR(128)">
+        <constraints nullable="true" />
+      </column>
+      <column name="industryid" type="INT">
+        <constraints nullable="false" />
+      </column>
+      <column name="companysize" type="VARCHAR(128)">
+        <constraints nullable="true" />
+      </column>
+      <column name="businessaddress" type="VARCHAR(512)">
+        <constraints nullable="false" />
+      </column>
+      <column name="phonenumber" type="VARCHAR(128)">
+        <constraints nullable="false" />
+      </column>
+      <column name="companyemail" type="VARCHAR(128)">
+        <constraints nullable="false" unique="true" />
+      </column>
+      <column name="website" type="VARCHAR(512)">
+        <constraints nullable="true" />
+      </column>
+      <column name="timezone" type="VARCHAR(128)">
+        <constraints nullable="false" />
+      </column>
+      <column name="attributes" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+
+    <addColumn tableName="tc_users">
+      <column name="role" type="VARCHAR(128)">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="true" />
+      </column>
+    </addColumn>
+
+    <addForeignKeyConstraint baseTableName="tc_users" baseColumnNames="companyid" constraintName="fk_users_companyid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_companies" />
+
+    <createTable tableName="tc_user_company">
+      <column name="userid" type="INT">
+        <constraints nullable="false" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint baseTableName="tc_user_company" baseColumnNames="userid" constraintName="fk_user_company_userid" onDelete="CASCADE" referencedColumnNames="id" referencedTableName="tc_users" />
+    <addForeignKeyConstraint baseTableName="tc_user_company" baseColumnNames="companyid" constraintName="fk_user_company_companyid" onDelete="CASCADE" referencedColumnNames="id" referencedTableName="tc_companies" />
+
+    <!-- Update existing admin users to SUPER_USER role -->
+    <sql>
+      UPDATE tc_users SET role = 'SUPER_USER' WHERE administrator = TRUE;
+      UPDATE tc_users SET role = 'COMPANY_USER' WHERE administrator = FALSE;
+    </sql>
+
+  </changeSet>
+
+</databaseChangeLog>

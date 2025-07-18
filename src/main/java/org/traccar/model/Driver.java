@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Anton Tananaev (anton@traccar.org)
+ * Copyright 2017 - 2024 Anton Tananaev (anton@traccar.org)
  * Copyright 2017 Andrey Kunitsyn (andrey@traccar.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,46 @@ public class Driver extends ExtendedModel {
 
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId.trim();
+    }
+
+    private String licenseNo;
+
+    public String getLicenseNo() {
+        return licenseNo;
+    }
+
+    public void setLicenseNo(String licenseNo) {
+        this.licenseNo = licenseNo;
+    }
+
+    private String phone;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    private long companyId;
+
+    public long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(long companyId) {
+        this.companyId = companyId;
+    }
+
+    private long assignedVehicleId;
+
+    public long getAssignedVehicleId() {
+        return assignedVehicleId;
+    }
+
+    public void setAssignedVehicleId(long assignedVehicleId) {
+        this.assignedVehicleId = assignedVehicleId;
     }
 
 }

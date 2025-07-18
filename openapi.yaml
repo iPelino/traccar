@@ -9,7 +9,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: '6.8.1'
+  version: '6.9.0'
 servers:
   - url: https://demo.traccar.org/api
     description: Demo Server 1
@@ -45,6 +45,8 @@ tags:
     description: Group management
   - name: Users
     description: User management
+  - name: Companies
+    description: Company management
   - name: Permissions
     description: User permissions and other object linking
   - name: Positions
@@ -733,6 +735,12 @@ paths:
           description: Can only be used by admin or manager users
           schema:
             type: string
+        - name: companyId
+          in: query
+          description: Filter users by company. Super users can filter by any company, admins can only filter by their own company
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -792,6 +800,118 @@ paths:
       summary: Delete a User
       tags:
         - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+          content: {}
+
+  /companies:
+    get:
+      summary: Fetch a list of Companies
+      tags:
+        - Companies
+      parameters:
+        - name: all
+          in: query
+          description: Can only be used by super users to fetch all entities
+          schema:
+            type: boolean
+        - name: userId
+          in: query
+          description: Standard users can use this only with their own _userId_
+          schema:
+            type: integer
+        - name: groupId
+          in: query
+          description: Standard users can use this only with _groupId_s, they have access to
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Company'
+        '400':
+          description: No Permission
+          content: {}
+    post:
+      summary: Create a Company
+      tags:
+        - Companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+      x-codegen-request-body-name: body
+
+  /companies/{id}:
+    get:
+      summary: Fetch a Company
+      tags:
+        - Companies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '400':
+          description: No Permission
+          content: {}
+    put:
+      summary: Update a Company
+      tags:
+        - Companies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+      x-codegen-request-body-name: body
+    delete:
+      summary: Delete a Company
+      tags:
+        - Companies
       parameters:
         - name: id
           in: path
@@ -1841,9 +1961,64 @@ components:
         poiLayer:
           type: string
           nullable: true
+        role:
+          $ref: '#/components/schemas/UserRole'
+          nullable: true
+        companyId:
+          type: integer
+          format: int64
+          nullable: true
         attributes:
           type: object
           properties: {}
+    UserRole:
+      type: string
+      enum:
+        - SUPER_USER
+        - ADMIN
+        - COMPANY_USER
+        - FINANCE_USER
+      description: |
+        User role that determines permissions:
+        * `SUPER_USER` - Global access to all features and data
+        * `ADMIN` - Manage company-specific users, vehicles, reports
+        * `COMPANY_USER` - Regular company user with limited access
+        * `FINANCE_USER` - Access to payment and expense data only
+
+    Company:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        logo:
+          type: string
+          nullable: true
+        companyName:
+          type: string
+        registrationNumber:
+          type: string
+          nullable: true
+        industryId:
+          type: integer
+        companySize:
+          type: string
+          nullable: true
+        businessAddress:
+          type: string
+        phoneNumber:
+          type: string
+        companyEmail:
+          type: string
+        website:
+          type: string
+          nullable: true
+        timeZone:
+          type: string
+        attributes:
+          type: object
+          properties: {}
+
     Server:
       type: object
       properties:
@@ -2416,6 +2591,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Maintenance'
+      required: true
+    Company:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Company'
       required: true
   securitySchemes:
     BasicAuth:

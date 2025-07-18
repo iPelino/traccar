@@ -27,6 +27,8 @@ import org.traccar.model.UserRestrictions;
 import org.traccar.reports.CombinedReportProvider;
 import org.traccar.reports.DevicesReportProvider;
 import org.traccar.reports.EventsReportProvider;
+import org.traccar.reports.EvMetricsReport;
+import org.traccar.reports.FuelReportProvider;
 import org.traccar.reports.RouteReportProvider;
 import org.traccar.reports.StopsReportProvider;
 import org.traccar.reports.SummaryReportProvider;
@@ -34,6 +36,8 @@ import org.traccar.reports.TripsReportProvider;
 import org.traccar.reports.common.ReportExecutor;
 import org.traccar.reports.common.ReportMailer;
 import org.traccar.reports.model.CombinedReportItem;
+import org.traccar.reports.model.EvMetricsReportItem;
+import org.traccar.reports.model.FuelReportItem;
 import org.traccar.reports.model.StopReportItem;
 import org.traccar.reports.model.SummaryReportItem;
 import org.traccar.reports.model.TripReportItem;
@@ -82,6 +86,12 @@ public class ReportResource extends SimpleObjectResource<Report> {
 
     @Inject
     private DevicesReportProvider devicesReportProvider;
+
+    @Inject
+    private FuelReportProvider fuelReportProvider;
+
+    @Inject
+    private EvMetricsReport evMetricsReport;
 
     @Inject
     private ReportMailer reportMailer;
@@ -334,6 +344,46 @@ public class ReportResource extends SimpleObjectResource<Report> {
         return getStopsExcel(deviceIds, groupIds, from, to, type.equals("mail"));
     }
 
+    @Path("fuel")
+    @GET
+    public Collection<FuelReportItem> getFuel(
+            @QueryParam("deviceId") List<Long> deviceIds,
+            @QueryParam("groupId") List<Long> groupIds,
+            @QueryParam("from") Date from,
+            @QueryParam("to") Date to) throws StorageException {
+        permissionsService.checkRestriction(getUserId(), UserRestrictions::getDisableReports);
+        actionLogger.report(request, getUserId(), false, "fuel", from, to, deviceIds, groupIds);
+        return fuelReportProvider.getObjects(getUserId(), deviceIds, groupIds, from, to);
+    }
+
+    @Path("fuel")
+    @GET
+    @Produces(EXCEL)
+    public Response getFuelExcel(
+            @QueryParam("deviceId") List<Long> deviceIds,
+            @QueryParam("groupId") List<Long> groupIds,
+            @QueryParam("from") Date from,
+            @QueryParam("to") Date to,
+            @QueryParam("mail") boolean mail) throws StorageException {
+        permissionsService.checkRestriction(getUserId(), UserRestrictions::getDisableReports);
+        return executeReport(getUserId(), mail, stream -> {
+            actionLogger.report(request, getUserId(), false, "fuel", from, to, deviceIds, groupIds);
+            fuelReportProvider.getExcel(stream, getUserId(), deviceIds, groupIds, from, to);
+        });
+    }
+
+    @Path("fuel/{type:xlsx|mail}")
+    @GET
+    @Produces(EXCEL)
+    public Response getFuelExcel(
+            @QueryParam("deviceId") List<Long> deviceIds,
+            @QueryParam("groupId") List<Long> groupIds,
+            @QueryParam("from") Date from,
+            @QueryParam("to") Date to,
+            @PathParam("type") String type) throws StorageException {
+        return getFuelExcel(deviceIds, groupIds, from, to, type.equals("mail"));
+    }
+
     @Path("devices/{type:xlsx|mail}")
     @GET
     @Produces(EXCEL)
@@ -343,6 +393,18 @@ public class ReportResource extends SimpleObjectResource<Report> {
         return executeReport(getUserId(), type.equals("mail"), stream -> {
             devicesReportProvider.getExcel(stream, getUserId());
         });
+    }
+
+    @Path("ev-data")
+    @GET
+    public Collection<EvMetricsReportItem> getEvData(
+            @QueryParam("deviceId") List<Long> deviceIds,
+            @QueryParam("groupId") List<Long> groupIds,
+            @QueryParam("from") Date from,
+            @QueryParam("to") Date to) throws StorageException {
+        permissionsService.checkRestriction(getUserId(), UserRestrictions::getDisableReports);
+        actionLogger.report(request, getUserId(), false, "ev-data", from, to, deviceIds, groupIds);
+        return evMetricsReport.getObjects(getUserId(), deviceIds, groupIds, from, to);
     }
 
 }

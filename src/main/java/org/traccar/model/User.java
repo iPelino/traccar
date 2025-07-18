@@ -243,6 +243,26 @@ public class User extends ExtendedModel implements UserRestrictions, Disableable
         this.poiLayer = poiLayer;
     }
 
+    private UserRole role;
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    private long companyId;
+
+    public long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(long companyId) {
+        this.companyId = companyId;
+    }
+
     private String totpKey;
 
     public String getTotpKey() {

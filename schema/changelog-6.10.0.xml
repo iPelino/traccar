@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+  logicalFilePath="changelog-6.10.0">
+
+  <changeSet author="author" id="changelog-6.10.0">
+
+    <createTable tableName="tc_industries">
+      <column name="id" type="INT" autoIncrement="true">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="name" type="VARCHAR(128)">
+        <constraints nullable="false" unique="true" />
+      </column>
+      <column name="description" type="VARCHAR(512)">
+        <constraints nullable="true" />
+      </column>
+      <column name="attributes" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+
+    <!-- Add foreign key constraint from companies to industries -->
+    <addForeignKeyConstraint baseTableName="tc_companies" baseColumnNames="industryid" constraintName="fk_companies_industryid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_industries" />
+
+    <!-- Insert default industry values -->
+    <insert tableName="tc_industries">
+      <column name="name" value="Transportation and Logistics" />
+      <column name="description" value="Companies involved in the movement of goods and services" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Construction" />
+      <column name="description" value="Building and infrastructure development companies" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Agriculture" />
+      <column name="description" value="Farming, forestry, and related activities" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Mining and Resources" />
+      <column name="description" value="Extraction and processing of natural resources" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Field Services" />
+      <column name="description" value="On-site service providers and maintenance" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Public Safety" />
+      <column name="description" value="Emergency services and law enforcement" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Utilities" />
+      <column name="description" value="Electricity, water, gas, and telecommunications providers" />
+    </insert>
+    <insert tableName="tc_industries">
+      <column name="name" value="Other" />
+      <column name="description" value="Other industries not listed" />
+    </insert>
+
+    <!-- Add new fields to drivers table -->
+    <addColumn tableName="tc_drivers">
+      <column name="licenseno" type="VARCHAR(128)">
+        <constraints nullable="true" />
+      </column>
+      <column name="phone" type="VARCHAR(128)">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="true" />
+      </column>
+      <column name="assignedvehicleid" type="INT">
+        <constraints nullable="true" />
+      </column>
+    </addColumn>
+
+    <!-- Add foreign key constraints -->
+    <addForeignKeyConstraint baseTableName="tc_drivers" baseColumnNames="companyid" constraintName="fk_drivers_companyid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_companies" />
+    <addForeignKeyConstraint baseTableName="tc_drivers" baseColumnNames="assignedvehicleid" constraintName="fk_drivers_vehicleid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_devices" />
+
+    <!-- Create driver income table -->
+    <createTable tableName="tc_driver_income">
+      <column name="id" type="INT" autoIncrement="true">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="driverid" type="INT">
+        <constraints nullable="false" />
+      </column>
+      <column name="amount" type="DOUBLE">
+        <constraints nullable="false" />
+      </column>
+      <column name="description" type="VARCHAR(512)">
+        <constraints nullable="true" />
+      </column>
+      <column name="date" type="TIMESTAMP">
+        <constraints nullable="false" />
+      </column>
+      <column name="period" type="VARCHAR(128)">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="true" />
+      </column>
+      <column name="attributes" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+
+    <!-- Add foreign key constraints for driver income -->
+    <addForeignKeyConstraint baseTableName="tc_driver_income" baseColumnNames="driverid" constraintName="fk_driver_income_driverid" onDelete="CASCADE" referencedColumnNames="id" referencedTableName="tc_drivers" />
+    <addForeignKeyConstraint baseTableName="tc_driver_income" baseColumnNames="companyid" constraintName="fk_driver_income_companyid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_companies" />
+
+    <!-- Create driver payments table -->
+    <createTable tableName="tc_driver_payments">
+      <column name="id" type="INT" autoIncrement="true">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="driverid" type="INT">
+        <constraints nullable="false" />
+      </column>
+      <column name="amount" type="DOUBLE">
+        <constraints nullable="false" />
+      </column>
+      <column name="method" type="VARCHAR(128)">
+        <constraints nullable="false" />
+      </column>
+      <column name="date" type="TIMESTAMP">
+        <constraints nullable="false" />
+      </column>
+      <column name="reference" type="VARCHAR(512)">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="true" />
+      </column>
+      <column name="attributes" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+
+    <!-- Add foreign key constraints for driver payments -->
+    <addForeignKeyConstraint baseTableName="tc_driver_payments" baseColumnNames="driverid" constraintName="fk_driver_payments_driverid" onDelete="CASCADE" referencedColumnNames="id" referencedTableName="tc_drivers" />
+    <addForeignKeyConstraint baseTableName="tc_driver_payments" baseColumnNames="companyid" constraintName="fk_driver_payments_companyid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_companies" />
+
+    <!-- Create vehicle expenses table -->
+    <createTable tableName="tc_vehicle_expenses">
+      <column name="id" type="INT" autoIncrement="true">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="vehicleid" type="INT">
+        <constraints nullable="false" />
+      </column>
+      <column name="amount" type="DOUBLE">
+        <constraints nullable="false" />
+      </column>
+      <column name="type" type="VARCHAR(128)">
+        <constraints nullable="false" />
+      </column>
+      <column name="date" type="TIMESTAMP">
+        <constraints nullable="false" />
+      </column>
+      <column name="description" type="VARCHAR(512)">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="true" />
+      </column>
+      <column name="attributes" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+
+    <!-- Add foreign key constraints for vehicle expenses -->
+    <addForeignKeyConstraint baseTableName="tc_vehicle_expenses" baseColumnNames="vehicleid" constraintName="fk_vehicle_expenses_vehicleid" onDelete="CASCADE" referencedColumnNames="id" referencedTableName="tc_devices" />
+    <addForeignKeyConstraint baseTableName="tc_vehicle_expenses" baseColumnNames="companyid" constraintName="fk_vehicle_expenses_companyid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_companies" />
+
+    <!-- Create reminders table -->
+    <createTable tableName="tc_reminders">
+      <column name="id" type="INT" autoIncrement="true">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="vehicleid" type="INT">
+        <constraints nullable="false" />
+      </column>
+      <column name="type" type="VARCHAR(128)">
+        <constraints nullable="false" />
+      </column>
+      <column name="description" type="VARCHAR(512)">
+        <constraints nullable="true" />
+      </column>
+      <column name="duedate" type="TIMESTAMP">
+        <constraints nullable="true" />
+      </column>
+      <column name="duemileage" type="DOUBLE">
+        <constraints nullable="true" />
+      </column>
+      <column name="completed" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false" />
+      </column>
+      <column name="completeddate" type="TIMESTAMP">
+        <constraints nullable="true" />
+      </column>
+      <column name="companyid" type="INT">
+        <constraints nullable="true" />
+      </column>
+      <column name="attributes" type="VARCHAR(4000)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+
+    <!-- Add foreign key constraints for reminders -->
+    <addForeignKeyConstraint baseTableName="tc_reminders" baseColumnNames="vehicleid" constraintName="fk_reminders_vehicleid" onDelete="CASCADE" referencedColumnNames="id" referencedTableName="tc_devices" />
+    <addForeignKeyConstraint baseTableName="tc_reminders" baseColumnNames="companyid" constraintName="fk_reminders_companyid" onDelete="SET NULL" referencedColumnNames="id" referencedTableName="tc_companies" />
+
+  </changeSet>
+
+</databaseChangeLog>

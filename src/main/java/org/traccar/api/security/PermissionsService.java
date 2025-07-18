@@ -19,6 +19,7 @@ import com.google.inject.servlet.RequestScoped;
 import org.traccar.model.BaseModel;
 import org.traccar.model.Calendar;
 import org.traccar.model.Command;
+import org.traccar.model.Company;
 import org.traccar.model.Device;
 import org.traccar.model.Group;
 import org.traccar.model.GroupedModel;
@@ -28,6 +29,7 @@ import org.traccar.model.Schedulable;
 import org.traccar.model.Server;
 import org.traccar.model.User;
 import org.traccar.model.UserRestrictions;
+import org.traccar.model.UserRole;
 import org.traccar.storage.Storage;
 import org.traccar.storage.StorageException;
 import org.traccar.storage.query.Columns;
@@ -210,7 +212,51 @@ public class PermissionsService {
 
     public <T extends BaseModel> void checkPermission(
             Class<T> clazz, long userId, long objectId) throws StorageException, SecurityException {
-        if (!getUser(userId).getAdministrator() && !(clazz.equals(User.class) && userId == objectId)) {
+        User user = getUser(userId);
+
+        // Check permissions based on user role
+        if (user.getRole() != null) {
+            switch (user.getRole()) {
+                case SUPER_USER:
+                    // Super user has access to everything
+                    return;
+                case ADMIN:
+                    // Admin has access to everything in their company
+                    if (clazz.equals(Company.class)) {
+                        // Admin can only access their own company
+                        if (objectId != user.getCompanyId()) {
+                            throw new SecurityException("Company access denied");
+                        }
+                        return;
+                    } else if (clazz.equals(User.class)) {
+                        // Admin can access themselves and users in their company
+                        if (userId == objectId) {
+                            return;
+                        }
+                        User targetUser = storage.getObject(User.class, new Request(
+                                new Columns.Include("id", "companyId"),
+                                new Condition.Equals("id", objectId)));
+                        if (targetUser != null && targetUser.getCompanyId() == user.getCompanyId()) {
+                            return;
+                        }
+                        throw new SecurityException("User access denied");
+                    }
+                    // For other objects, check if they belong to the admin's company
+                    // This is handled by the default permission check below
+                    break;
+                case FINANCE_USER:
+                    // Finance user has access to financial data only
+                    // For now, they have the same permissions as regular users
+                    // In the future, this can be extended to include finance-specific resources
+                    break;
+                case COMPANY_USER:
+                    // Regular user has limited access
+                    break;
+            }
+        }
+
+        // Default permission check (legacy behavior)
+        if (!user.getAdministrator() && !(clazz.equals(User.class) && userId == objectId)) {
             var object = storage.getObject(clazz, new Request(
                     new Columns.Include("id"),
                     new Condition.And(
@@ -220,6 +266,28 @@ public class PermissionsService {
             if (object == null) {
                 throw new SecurityException(clazz.getSimpleName() + " access denied");
             }
+        }
+    }
+
+    /**
+     * Check if a user has access to objects within their company.
+     * 
+     * @param userId User ID
+     * @param companyId Company ID to check against
+     * @throws StorageException If there's an error accessing storage
+     * @throws SecurityException If the user doesn't have permission
+     */
+    public void checkCompanyPermission(long userId, long companyId) throws StorageException, SecurityException {
+        User user = getUser(userId);
+
+        // Super user can access any company
+        if (user.getRole() == UserRole.SUPER_USER) {
+            return;
+        }
+
+        // Other users can only access their own company
+        if (user.getCompanyId() != companyId) {
+            throw new SecurityException("Company access denied");
         }
     }
 

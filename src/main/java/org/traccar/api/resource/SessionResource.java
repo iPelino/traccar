@@ -24,10 +24,13 @@ import org.traccar.database.OpenIdProvider;
 import org.traccar.helper.LogAction;
 import org.traccar.helper.SessionHelper;
 import org.traccar.model.User;
+import org.traccar.model.UserRole;
 import org.traccar.storage.StorageException;
 import org.traccar.storage.query.Columns;
 import org.traccar.storage.query.Condition;
 import org.traccar.storage.query.Request;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import jakarta.annotation.Nullable;
@@ -56,6 +59,43 @@ import java.util.Date;
 @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 public class SessionResource extends BaseResource {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class UserSession {
+        private User user;
+        private UserRole role;
+        private Long companyId;
+
+        public UserSession(User user) {
+            this.user = user;
+            this.role = user.getRole();
+            this.companyId = user.getCompanyId() > 0 ? user.getCompanyId() : null;
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public void setUser(User user) {
+            this.user = user;
+        }
+
+        public UserRole getRole() {
+            return role;
+        }
+
+        public void setRole(UserRole role) {
+            this.role = role;
+        }
+
+        public Long getCompanyId() {
+            return companyId;
+        }
+
+        public void setCompanyId(Long companyId) {
+            this.companyId = companyId;
+        }
+    }
+
     @Inject
     private LoginService loginService;
 
@@ -74,14 +114,14 @@ public class SessionResource extends BaseResource {
 
     @PermitAll
     @GET
-    public User get(@QueryParam("token") String token) throws StorageException, IOException, GeneralSecurityException {
+    public UserSession get(@QueryParam("token") String token) throws StorageException, IOException, GeneralSecurityException {
 
         if (token != null) {
             LoginResult loginResult = loginService.login(token);
             if (loginResult != null) {
                 User user = loginResult.getUser();
                 SessionHelper.userLogin(actionLogger, request, user, loginResult.getExpiration());
-                return user;
+                return new UserSession(user);
             }
         }
 
@@ -89,7 +129,7 @@ public class SessionResource extends BaseResource {
         if (userId != null) {
             User user = permissionsService.getUser(userId);
             if (user != null) {
-                return user;
+                return new UserSession(user);
             }
         }
 
@@ -98,17 +138,17 @@ public class SessionResource extends BaseResource {
 
     @Path("{id}")
     @GET
-    public User get(@PathParam("id") long userId) throws StorageException {
+    public UserSession get(@PathParam("id") long userId) throws StorageException {
         permissionsService.checkUser(getUserId(), userId);
         User user = storage.getObject(User.class, new Request(
                 new Columns.All(), new Condition.Equals("id", userId)));
         SessionHelper.userLogin(actionLogger, request, user, null);
-        return user;
+        return new UserSession(user);
     }
 
     @PermitAll
     @POST
-    public User add(
+    public UserSession add(
             @FormParam("email") String email,
             @FormParam("password") String password,
             @FormParam("code") Integer code) throws StorageException {
@@ -125,7 +165,7 @@ public class SessionResource extends BaseResource {
         if (loginResult != null) {
             User user = loginResult.getUser();
             SessionHelper.userLogin(actionLogger, request, user, null);
-            return user;
+            return new UserSession(user);
         } else {
             actionLogger.failedLogin(request);
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
