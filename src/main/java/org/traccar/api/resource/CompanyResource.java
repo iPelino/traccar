@@ -34,8 +34,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -47,9 +45,9 @@ import java.util.regex.Pattern;
 @Consumes(MediaType.APPLICATION_JSON)
 public class CompanyResource extends ExtendedObjectResource<Company> {
 
-    private static final Pattern EMAIL_PATTERN = 
+    private static final Pattern EMAIL_PATTERN =
         Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final Pattern PHONE_PATTERN = 
+    private static final Pattern PHONE_PATTERN =
         Pattern.compile("^\\+?[0-9]{10,15}$");
     private static final int MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -248,8 +246,8 @@ public class CompanyResource extends ExtendedObjectResource<Company> {
         User user = permissionsService.getUser(getUserId());
 
         // Check permissions
-        if (user.getRole() != UserRole.SUPER_USER && 
-            (user.getRole() != UserRole.ADMIN || user.getCompanyId() != id)) {
+        if (user.getRole() != UserRole.SUPER_USER
+                && (user.getRole() != UserRole.ADMIN || user.getCompanyId() != id)) {
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(Map.of("error", "Company access denied"))
                     .build();

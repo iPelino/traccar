@@ -136,7 +136,7 @@ public class FinanceResource extends BaseResource {
 
         // Get payments
         return storage.getObjects(DriverPayment.class, new Request(
-                new Columns.All(), 
+                new Columns.All(),
                 Condition.merge(conditions),
                 new Order("date")));
     }
@@ -265,7 +265,7 @@ public class FinanceResource extends BaseResource {
 
         // Get expenses
         return storage.getObjects(VehicleExpense.class, new Request(
-                new Columns.All(), 
+                new Columns.All(),
                 Condition.merge(conditions),
                 new Order("date")));
     }

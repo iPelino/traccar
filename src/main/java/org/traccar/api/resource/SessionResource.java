@@ -114,7 +114,8 @@ public class SessionResource extends BaseResource {
 
     @PermitAll
     @GET
-    public UserSession get(@QueryParam("token") String token) throws StorageException, IOException, GeneralSecurityException {
+    public UserSession get(@QueryParam("token") String token)
+            throws StorageException, IOException, GeneralSecurityException {
 
         if (token != null) {
             LoginResult loginResult = loginService.login(token);

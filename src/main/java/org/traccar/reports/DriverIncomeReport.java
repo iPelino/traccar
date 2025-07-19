@@ -15,10 +15,8 @@
  */
 package org.traccar.reports;
 
-import org.apache.poi.ss.util.WorkbookUtil;
 import org.traccar.config.Config;
 import org.traccar.config.Keys;
-import org.traccar.helper.model.DeviceUtil;
 import org.traccar.model.Driver;
 import org.traccar.model.DriverIncome;
 import org.traccar.model.User;
@@ -89,7 +87,7 @@ public class DriverIncomeReport {
 
         // Get income records
         List<DriverIncome> incomeRecords = storage.getObjects(DriverIncome.class, new Request(
-                new Columns.All(), 
+                new Columns.All(),
                 Condition.merge(conditions),
                 new Order("date")));
 
@@ -151,7 +149,7 @@ public class DriverIncomeReport {
 
         // Get income records
         List<DriverIncome> incomeRecords = storage.getObjects(DriverIncome.class, new Request(
-                new Columns.All(), 
+                new Columns.All(),
                 Condition.merge(conditions)));
 
         // Get all relevant drivers
@@ -189,7 +187,7 @@ public class DriverIncomeReport {
     }
 
     public void getExcel(
-            OutputStream outputStream, long userId, long driverId, 
+            OutputStream outputStream, long userId, long driverId,
             Date from, Date to, String period) throws StorageException, IOException {
 
         Collection<DriverIncomeReportItem> reportItems = getObjects(userId, driverId, from, to, period);

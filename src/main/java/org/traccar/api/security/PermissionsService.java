@@ -271,7 +271,7 @@ public class PermissionsService {
 
     /**
      * Check if a user has access to objects within their company.
-     * 
+     *
      * @param userId User ID
      * @param companyId Company ID to check against
      * @throws StorageException If there's an error accessing storage

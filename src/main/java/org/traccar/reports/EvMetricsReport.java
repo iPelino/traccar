@@ -77,48 +77,48 @@ public class EvMetricsReport {
                 item.setTime(position.getFixTime());
                 item.setLatitude(position.getLatitude());
                 item.setLongitude(position.getLongitude());
-                
+
                 // Extract EV-specific metrics
                 Double batteryLevel = position.getDouble(Position.KEY_BATTERY_LEVEL);
                 if (batteryLevel != null) {
                     item.setBatteryLevel(batteryLevel);
                 }
-                
+
                 Double motorTemp = position.getDouble("motorTemperature");
                 if (motorTemp != null) {
                     item.setMotorTemperature(motorTemp);
                 }
-                
+
                 Double rpm = position.getDouble(Position.KEY_RPM);
                 if (rpm != null) {
                     item.setRpm(rpm);
                 }
-                
+
                 String dtcs = position.getString(Position.KEY_DTCS);
                 if (dtcs != null) {
                     item.setDtcs(dtcs);
                 }
-                
+
                 Double power = position.getDouble("power");
                 if (power != null) {
                     item.setPower(power);
                 }
-                
+
                 Double range = position.getDouble("range");
                 if (range != null) {
                     item.setRange(range);
                 }
-                
+
                 Double chargingRate = position.getDouble("chargingRate");
                 if (chargingRate != null) {
                     item.setChargingRate(chargingRate);
                 }
-                
+
                 Boolean charging = position.getBoolean("charging");
                 if (charging != null) {
                     item.setCharging(charging);
                 }
-                
+
                 result.add(item);
             }
         }

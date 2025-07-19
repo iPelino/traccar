@@ -39,7 +39,6 @@ import org.traccar.storage.query.Condition;
 import org.traccar.storage.query.Request;
 
 import jakarta.inject.Inject;
-import java.io.IOException;
 import java.util.Date;
 
 import java.util.Collection;

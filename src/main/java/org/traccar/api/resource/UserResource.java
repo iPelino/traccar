@@ -98,7 +98,8 @@ public class UserResource extends BaseObjectResource<User> {
                         permissionsService.checkUser(getUserId(), userId);
                         conditions.add(new Condition.Permission(User.class, userId, ManagedUser.class).excludeGroups());
                     } else {
-                        conditions.add(new Condition.Permission(User.class, getUserId(), ManagedUser.class).excludeGroups());
+                        conditions.add(new Condition.Permission(User.class, getUserId(), ManagedUser.class)
+                                .excludeGroups());
                     }
                     break;
                 default:
@@ -107,7 +108,8 @@ public class UserResource extends BaseObjectResource<User> {
                         permissionsService.checkUser(getUserId(), userId);
                         conditions.add(new Condition.Permission(User.class, userId, ManagedUser.class).excludeGroups());
                     } else if (permissionsService.notAdmin(getUserId())) {
-                        conditions.add(new Condition.Permission(User.class, getUserId(), ManagedUser.class).excludeGroups());
+                        conditions.add(new Condition.Permission(User.class, getUserId(), ManagedUser.class)
+                                .excludeGroups());
                     }
             }
         } else {
@@ -164,7 +166,8 @@ public class UserResource extends BaseObjectResource<User> {
                         int userCount = storage.getObjects(baseClass, new Request(
                                 new Columns.All(),
                                 new Condition.And(
-                                    new Condition.Permission(User.class, getUserId(), ManagedUser.class).excludeGroups(),
+                                    new Condition.Permission(User.class, getUserId(), ManagedUser.class)
+                                            .excludeGroups(),
                                     new Condition.Equals("companyId", currentUser.getCompanyId())
                                 ))).size();
                         if (userCount >= currentUser.getUserLimit()) {
@@ -192,9 +195,9 @@ public class UserResource extends BaseObjectResource<User> {
 
         actionLogger.create(request, getUserId(), entity);
 
-        if (currentUser != null && 
-            (currentUser.getUserLimit() != 0 || 
-             (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.SUPER_USER))) {
+        if (currentUser != null
+                && (currentUser.getUserLimit() != 0
+                || (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.SUPER_USER))) {
             storage.addPermission(new Permission(User.class, getUserId(), ManagedUser.class, entity.getId()));
             actionLogger.link(request, getUserId(), User.class, getUserId(), ManagedUser.class, entity.getId());
         }

@@ -182,7 +182,7 @@ public class ReminderResource extends ExtendedObjectResource<Reminder> {
         permissionsService.checkPermission(Device.class, getUserId(), reminder.getVehicleId());
 
         // Check company permissions for non-super users
-        if (user.getRole() != UserRole.SUPER_USER && user.getCompanyId() > 0 
+        if (user.getRole() != UserRole.SUPER_USER && user.getCompanyId() > 0
                 && reminder.getCompanyId() != user.getCompanyId()) {
             throw new SecurityException("Reminder access denied");
         }
@@ -237,7 +237,7 @@ public class ReminderResource extends ExtendedObjectResource<Reminder> {
         permissionsService.checkPermission(Device.class, getUserId(), reminder.getVehicleId());
 
         // Check company permissions for non-super users
-        if (user.getRole() != UserRole.SUPER_USER && user.getCompanyId() > 0 
+        if (user.getRole() != UserRole.SUPER_USER && user.getCompanyId() > 0
                 && reminder.getCompanyId() != user.getCompanyId()) {
             throw new SecurityException("Reminder access denied");
         }
@@ -266,7 +266,7 @@ public class ReminderResource extends ExtendedObjectResource<Reminder> {
         permissionsService.checkPermission(Device.class, getUserId(), reminder.getVehicleId());
 
         // Check company permissions for non-super users
-        if (user.getRole() != UserRole.SUPER_USER && user.getCompanyId() > 0 
+        if (user.getRole() != UserRole.SUPER_USER && user.getCompanyId() > 0
                 && reminder.getCompanyId() != user.getCompanyId()) {
             throw new SecurityException("Reminder access denied");
         }
