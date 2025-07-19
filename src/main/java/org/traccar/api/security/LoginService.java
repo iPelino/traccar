@@ -108,6 +108,13 @@ public class LoginService {
         } else {
             if (ldapProvider != null && ldapProvider.login(email, password)) {
                 user = ldapProvider.getUser(email);
+
+                // Check if this is the first user and set role to SUPER_USER if it is
+                if (UserUtil.isEmpty(storage)) {
+                    user.setRole(org.traccar.model.UserRole.SUPER_USER);
+                    user.setCompanyId(0); // No company for SUPER_USER
+                }
+
                 user.setId(storage.addObject(user, new Request(new Columns.Exclude("id"))));
                 checkUserEnabled(user);
                 return new LoginResult(user);
@@ -128,6 +135,13 @@ public class LoginService {
             user.setEmail(email);
             user.setFixedEmail(true);
             user.setAdministrator(administrator);
+
+            // Check if this is the first user and set role to SUPER_USER if it is
+            if (UserUtil.isEmpty(storage)) {
+                user.setRole(org.traccar.model.UserRole.SUPER_USER);
+                user.setCompanyId(0); // No company for SUPER_USER
+            }
+
             user.setId(storage.addObject(user, new Request(new Columns.Exclude("id"))));
         }
         checkUserEnabled(user);

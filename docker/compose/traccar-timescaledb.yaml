@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: traccar
       TIMESCALEDB_TELEMETRY: "off"
     volumes:
-      - /opt/traccar/data:/var/lib/postgresql/data
+      - ./data:/var/lib/postgresql/data
 
   traccar:
     image: traccar/traccar:latest
@@ -22,6 +22,8 @@ services:
       DATABASE_URL: jdbc:postgresql://database:5432/traccar
       DATABASE_USER: traccar
       DATABASE_PASSWORD: traccar
+      SERVER_REGISTRATION: "true"
+      REGISTRATION: "true"
     healthcheck:
       test: [ "CMD", "curl", "-fsS", "http://localhost:8082/api/health" ]
       interval: 2m
@@ -30,6 +32,6 @@ services:
       retries: 3
     ports:
       - "8082:8082"
-      - "5000-5500:5000-5500"
+      - "5501:5000"
     volumes:
-      - /opt/traccar/logs:/opt/traccar/logs
+      - ./logs:/opt/traccar/logs

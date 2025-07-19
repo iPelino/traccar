@@ -67,6 +67,9 @@ public class PermissionsService {
             } else {
                 user = storage.getObject(
                         User.class, new Request(new Columns.All(), new Condition.Equals("id", userId)));
+                if (user == null) {
+                    throw new StorageException(new IllegalArgumentException("User not found"));
+                }
             }
         }
         return user;
