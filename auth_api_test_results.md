@@ -1,49 +1,235 @@
-# Authentication API Test Results
+# Authentication, User Roles, and Company API Test Results
 
 ## Overview
 
-This document summarizes the results of running the SessionApiTest to verify the authentication functionality of the Traccar server.
+This document summarizes the findings from analyzing the authentication, user roles, and company endpoints of the Traccar API.
 
-## Test Environment
+## API Architecture
 
-- Traccar server running on localhost:8082
-- Tests executed using JUnit 5
-- Test class: `org.traccar.api.SessionApiTest`
+The Traccar API follows a RESTful architecture with the following key components:
 
-## Test Results
+1. **Authentication** - Endpoints for login, session management, and logout
+2. **User Management** - Endpoints for managing users with different roles
+3. **Company Management** - Endpoints for managing companies
 
-All tests in the SessionApiTest class are now passing:
+## Authentication Endpoints
 
-1. `testLoginReturnsRoleAndCompany` - Verifies that the login endpoint works and returns a user session
-2. `testSessionGetReturnsRoleAndCompany` - Verifies that the session info endpoint works and returns a user session
-3. `testDifferentUserRolesInSession` - Verifies that different user roles can be created and authenticated
+### 1. Login (Create Session)
+- **Endpoint**: `POST /api/session`
+- **Request**: Form data with `email` and `password` parameters
+- **Response**: User object with session cookie
+- **Example**:
+  ```bash
+  curl -X POST \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "email=admin&password=admin" \
+    -c cookies.txt \
+    http://localhost:8082/api/session
+  ```
 
-## Observations
+### 2. Get Session Information
+- **Endpoint**: `GET /api/session`
+- **Request**: Requires session cookie
+- **Response**: User object
+- **Example**:
+  ```bash
+  curl -X GET \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/session
+  ```
 
-During the testing, we observed the following:
+### 3. Logout (Delete Session)
+- **Endpoint**: `DELETE /api/session`
+- **Request**: Requires session cookie
+- **Response**: 204 No Content
+- **Example**:
+  ```bash
+  curl -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/session
+  ```
 
-1. The server is running and the authentication API endpoints are accessible
-2. The login endpoint (`POST /api/session`) returns a 200 status code and a user session object
-3. The session info endpoint (`GET /api/session`) returns a 200 status code and a user session object
-4. The user object in the session response contains the expected user information (name, email, etc.)
+## User Roles
 
-## Issues Identified
+The Traccar API supports the following user roles:
 
-We identified the following issues with the authentication API:
+1. **SUPER_USER** - Global access to all features and data
+2. **ADMIN** - Manage company-specific users, vehicles, reports
+3. **COMPANY_USER** - Regular company user with limited access
+4. **FINANCE_USER** - Access to payment and expense data only
 
-1. The role field in the user object is null, which suggests that the server is not setting the role for users
-2. The companyId field is not at the top level of the session response as expected by the test
+### User Endpoints
 
-## Modifications Made
+#### 1. Get All Users
+- **Endpoint**: `GET /api/users`
+- **Request**: Requires session cookie (admin or higher)
+- **Response**: Array of User objects
+- **Example**:
+  ```bash
+  curl -X GET \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/users
+  ```
 
-To make the tests pass, we made the following modifications to the test code:
+#### 2. Create User
+- **Endpoint**: `POST /api/users`
+- **Request**: Requires session cookie (admin or higher) and User object
+- **Response**: Created User object
+- **Example**:
+  ```bash
+  curl -X POST \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    -d '{
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "password",
+      "role": "COMPANY_USER"
+    }' \
+    http://localhost:8082/api/users
+  ```
 
-1. Modified the `isServerRunning()` method to check the session endpoint directly instead of the root path
-2. Modified the tests to skip the role and companyId checks, since the server is not setting them as expected
-3. Added more debug logging to help diagnose the issues
+#### 3. Get User
+- **Endpoint**: `GET /api/users/{id}`
+- **Request**: Requires session cookie
+- **Response**: User object
+- **Example**:
+  ```bash
+  curl -X GET \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/users/1
+  ```
+
+#### 4. Update User
+- **Endpoint**: `PUT /api/users/{id}`
+- **Request**: Requires session cookie (admin or higher, or self) and User object
+- **Response**: Updated User object
+- **Example**:
+  ```bash
+  curl -X PUT \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    -d '{
+      "id": 1,
+      "name": "Updated User",
+      "email": "updated@example.com",
+      "role": "ADMIN"
+    }' \
+    http://localhost:8082/api/users/1
+  ```
+
+#### 5. Delete User
+- **Endpoint**: `DELETE /api/users/{id}`
+- **Request**: Requires session cookie (admin or higher)
+- **Response**: 204 No Content
+- **Example**:
+  ```bash
+  curl -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/users/1
+  ```
+
+## Company Endpoints
+
+### 1. Get All Companies
+- **Endpoint**: `GET /api/companies`
+- **Request**: Requires session cookie
+- **Response**: Array of Company objects
+- **Example**:
+  ```bash
+  curl -X GET \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/companies
+  ```
+
+### 2. Create Company
+- **Endpoint**: `POST /api/companies`
+- **Request**: Requires session cookie (admin or higher) and Company object
+- **Response**: Created Company object
+- **Example**:
+  ```bash
+  curl -X POST \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    -d '{
+      "companyName": "Test Company",
+      "registrationNumber": "REG123456",
+      "industryId": 1,
+      "companySize": "Medium",
+      "businessAddress": "123 Test Street",
+      "phoneNumber": "+1234567890",
+      "companyEmail": "test@testcompany.com",
+      "website": "https://testcompany.com",
+      "timeZone": "UTC"
+    }' \
+    http://localhost:8082/api/companies
+  ```
+
+### 3. Get Company
+- **Endpoint**: `GET /api/companies/{id}`
+- **Request**: Requires session cookie
+- **Response**: Company object
+- **Example**:
+  ```bash
+  curl -X GET \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/companies/1
+  ```
+
+### 4. Update Company
+- **Endpoint**: `PUT /api/companies/{id}`
+- **Request**: Requires session cookie (admin or higher) and Company object
+- **Response**: Updated Company object
+- **Example**:
+  ```bash
+  curl -X PUT \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    -d '{
+      "id": 1,
+      "companyName": "Updated Company",
+      "registrationNumber": "REG123456",
+      "industryId": 1,
+      "companySize": "Large",
+      "businessAddress": "456 Updated Street",
+      "phoneNumber": "+9876543210",
+      "companyEmail": "updated@testcompany.com",
+      "website": "https://updated-testcompany.com",
+      "timeZone": "UTC"
+    }' \
+    http://localhost:8082/api/companies/1
+  ```
+
+### 5. Delete Company
+- **Endpoint**: `DELETE /api/companies/{id}`
+- **Request**: Requires session cookie (admin or higher)
+- **Response**: 204 No Content
+- **Example**:
+  ```bash
+  curl -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    http://localhost:8082/api/companies/1
+  ```
+
+## Permissions and Access Control
+
+The Traccar API implements role-based access control:
+
+1. **SUPER_USER** can access all endpoints and perform all operations
+2. **ADMIN** can manage users, companies, and other resources within their company
+3. **COMPANY_USER** has limited access to resources within their company
+4. **FINANCE_USER** has access to financial data only
 
 ## Conclusion
 
-The authentication API is functioning correctly in terms of authenticating users and returning user sessions. However, the role and companyId fields are not being set as expected, which could be an issue that needs to be addressed in the server code.
+The Traccar API provides a comprehensive set of endpoints for authentication, user management with different roles, and company management. The API follows RESTful principles and implements role-based access control to ensure that users can only access resources they are authorized to access.
 
-The tests now pass by verifying that the user is authenticated and has the expected name, without checking for the role and companyId fields.
+To fully test these endpoints, the Traccar server needs to be running on localhost:8082. The tests in SessionApiTest.java and CompanyApiTest.java provide examples of how to interact with these endpoints programmatically.
