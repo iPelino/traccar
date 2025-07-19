@@ -12,4 +12,4 @@ out
 build
 .vscode
 bin
-.dev_guides
+.dev*
